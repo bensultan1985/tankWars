@@ -34,7 +34,9 @@ class player {
                 right: false
             },
             this.cannonTimer = 0,
-            this.life = 3
+            this.life = 3,
+            this.rect = {},
+            this.cannonBalls = []
     }
 }
 let currentGame = [];
@@ -66,7 +68,12 @@ app.get('/getuuid', function(req, res, next) {
   });
 
   app.post('/postdata', function(req, res) {
+    console.log()
     res.send(200)
   })
+  app.get('/getdata', function(req, res, next) {
+    gameId = req.body.id;
+    res.status(200).send({game: games[gameId]})
+    });
 
 module.exports = app;
