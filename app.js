@@ -68,12 +68,19 @@ app.get('/getuuid', function(req, res, next) {
   });
 
   app.post('/postdata', function(req, res) {
-    console.log()
-    res.send(200)
+    let gameId = req.body.id
+    let game = req.body
+    games[gameId] = game
+    res.status(200).send(game)
   })
-  app.get('/getdata', function(req, res, next) {
-    gameId = req.body.id;
-    res.status(200).send({game: games[gameId]})
+
+  app.get('/getdata:id', function(req, res, next) {
+    let id = req.params.get("gameId"); // "foo"
+    console.log('IDDD', id)
+    let gameId = req.params.gameId
+    // let id = req.params.id
+    console.log(games[gameId])
+    res.status(200).send({id:id, game:games[gameId]});
     });
 
 module.exports = app;

@@ -25,12 +25,26 @@ async function getUuid() {
   const uuid = await fetch('/getuuid')
   .then(response => {
     return response.json()
-
   })
   .then(data => {
-    console.log(data.game)
     player = data.id
     p = data.id == data.p1? data.p1 : data.p2;
+    otherPlayer = data.id == data.p1? data.p2 : data.p1;
+  state = data.game});
+}
+
+async function getData() {
+  const data = await fetch(`/getData`+ new URLSearchParams({
+    gameId: state.id,
+    id: player
+}))
+  .then(response => {
+    return response.json()
+  })
+  .then(data => {
+    player = data.id
+    p = data.id == data.p1? data.p1 : data.p2;
+    otherPlayer = data.id == data.p1? data.p2 : data.p1;
   state = data.game});
 }
 
@@ -92,7 +106,7 @@ window.addEventListener('keyup', (e) => {
         // ball.y += ball.dy;
       };
 
-      function update(time) {
+      async function update(time) {
         if (state[player].cannonTimer > 0) state[player].cannonTimer--
         if (state[player].cPress.down) state[player].rect.y = state[player].rect.y + 5
         if (state[player].cPress.up) state[player].rect.y = state[player].rect.y - 5
@@ -125,11 +139,15 @@ window.addEventListener('keyup', (e) => {
         // now you call update recursively in order to keep moving
         // postData();
         count++
-        // if (count < 20)
+        if (count < 20)
 
     if(time-lastFrameTime < FRAME_MIN_TIME){
       // console.log(time) //skip the frame if the call is too early
-      postData();
+      // let hits = await reportHits();
+     let post = await postData();
+     console.log(post, 'AHHHHHH')
+    //  let get = await getData();
+    //  console.log(get)
 
         requestAnimationFrame(update);
         return; // return as there is nothing to do
@@ -149,48 +167,60 @@ window.addEventListener('keyup', (e) => {
     //     ctx.closePath();
     //   }
 
-    function postData() {
-      let xhr = new XMLHttpRequest();
-xhr.open("POST", "/postdata");
+function postData() {
+  let xhr = new XMLHttpRequest();
+  xhr.open("POST", "/postdata");
+  xhr.setRequestHeader("Accept", "application/json");
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.onload = () => console.log(JSON.parse(xhr.responseText));
+  let data = JSON.stringify(state);
+  xhr.send(data);
+}
 
-xhr.setRequestHeader("Accept", "application/json");
-xhr.setRequestHeader("Content-Type", "application/json");
+function postHit() {
+  let xhr = new XMLHttpRequest();
+  xhr.open("POST", "/postdata");
+  xhr.setRequestHeader("Accept", "application/json");
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.onload = () => console.log(xhr.responseText);
+  let data = JSON.stringify({otherPlayer, cannonBalls: state[otherPlayer].cannonBalls}, player, state[player].hits);
+  xhr.send(data);
+}
 
-// xhr.onload = () => console.log(xhr.responseText);
+function setupRect() {
+  if (state.p1 == player) {
+  state[player].rect = {
+    w: 20,
+    h: 20,
+    padding: 30,
+    offsetx: 45,
+    offsety: 60,
+    visible: true,
+    color: "#F7B02B",
+    x: 45,
+    y: 200,
+    dx: 3,
+    dy: -1,
+  }
+  } else {
+  state[player].rect = {
+    w: 20,
+    h: 20,
+    padding: 30,
+    offsetx: 45,
+    offsety: 60,
+    visible: true,
+    color: "#000000",
+    x: 545,
+    y: 200,
+    dx: 3,
+    dy: -1,
+  }
+  }
+}
 
-let data = JSON.stringify(state);
-
-xhr.send(data);
-    }
-
-    function setupRect() {
-      if (state.p1 == player) {
-      state[player].rect = {
-        w: 20,
-        h: 20,
-        padding: 30,
-        offsetx: 45,
-        offsety: 60,
-        visible: true,
-        color: "#F7B02B",
-        x: 45,
-        y: 200,
-        dx: 3,
-        dy: -1,
-      }
-     } else {
-      state[player].rect = {
-        w: 20,
-        h: 20,
-        padding: 30,
-        offsetx: 45,
-        offsety: 60,
-        visible: true,
-        color: "#000000",
-        x: 545,
-        y: 200,
-        dx: 3,
-        dy: -1,
-      }
-      }
-    }
+function reportHits() {
+  // state[otherPlayer].cannonBalls.forEach(cannonball => {
+  //   console.log('test')
+  // })
+}
