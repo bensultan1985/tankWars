@@ -66,25 +66,24 @@ app.get('/getuuid', function(req, res, next) {
     let gameId = req.body.gameId
     let game = req.body.game
     games[gameId][req.body.player].rect = req.body.rect;
-    console.log(games[gameId])
+    games[gameId][req.body.player].cPress = req.body.cPress;
+/*     if (games[gameId][req.body.player].cPress.down) games[gameId][req.body.player].rect.y = games[gameId][req.body.player].rect.y + 5
+    if (games[gameId][req.body.player].cPress.up) games[gameId][req.body.player].rect.y = games[gameId][req.body.player].rect.y - 5
+    if (games[gameId][req.body.player].cPress.left) games[gameId][req.body.player].rect.x = games[gameId][req.body.player].rect.x - 5
+    if (games[gameId][req.body.player].cPress.right) games[gameId][req.body.player].rect.x = games[gameId][req.body.player].rect.x + 5 */
     res.status(200).send(game)
   })
 
   app.get('/getplayers', function(req, res) {
-    console.log(req.query.id, 'this is ID')
-    console.log(games[req.query.id].players.length)
     res.status(200).send(games[req.query.id].players)
   })
 
   app.get('/getstate', function(req, res) {
-    console.log(req.query.id, 'this is ID')
-    console.log(games[req.query.id].players.length)
     res.status(200).send(games[req.query.id])
   })
 
   app.get('/getdata:id', function(req, res, next) {
     let id = req.params.get("gameId"); // "foo"
-    console.log('IDDD', id)
     let gameId = req.params.gameId
     // let id = req.params.id
     console.log(games[gameId])

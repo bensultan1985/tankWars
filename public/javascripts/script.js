@@ -5,8 +5,17 @@ let p = "";
 let state = {};
 let count = 0;
 let players = [];
+let otherPlayer = '';
 limitTime = false;
 let init = true;
+const solid = {
+  cPress: {
+    up: false,
+    down: false,
+    left: false,
+    right: false
+  }
+}
 const FRAMES_PER_SECOND = 3;  // Valid values are 60,30,20,15,10...
 // set the mim time to render the next frame
 const FRAME_MIN_TIME = (1000/60) * (60 / FRAMES_PER_SECOND) - (1000/60) * 0.5;
@@ -23,12 +32,12 @@ var ctx = canvas.getContext("2d");
 async function onLoad() {
   await getUuid();
   while (state.players.length < 2) {
-    players = await getPlayers();
+    players = await getState();
   }
   players = await getPlayers();
   console.log(state.players)
   setupRect();
-  postMove(false)
+  let test = await postMove(false)
     update();
 };
 
@@ -61,7 +70,6 @@ async function getUuid() {
     // console.log('testing')
     player = data.id
     p = data.id == data.p1? data.p1 : data.p2;
-    otherPlayer = data.id == data.p1? data.p2 : data.p1;
   state = data.game});
   return
 }
@@ -87,6 +95,12 @@ window.addEventListener('keydown', (e) => {
     if (e.key == "ArrowDown") state[player].cPress.down = true
     if (e.key == "ArrowLeft") state[player].cPress.left = true
     if (e.key == "ArrowRight") state[player].cPress.right = true
+
+    if (e.key == " ") solid.cPress.space = true
+    if (e.key == "ArrowUp") solid.cPress.up = true
+    if (e.key == "ArrowDown") solid.cPress.down = true
+    if (e.key == "ArrowLeft") solid.cPress.left = true
+    if (e.key == "ArrowRight") solid.cPress.right = true
 })
 
 window.addEventListener('keyup', (e) => {
@@ -95,13 +109,18 @@ window.addEventListener('keyup', (e) => {
     if (e.key == "ArrowDown") state[player].cPress.down = false
     if (e.key == "ArrowLeft") state[player].cPress.left = false
     if (e.key == "ArrowRight") state[player].cPress.right = false
+
+    if (e.key == " ") solid.cPress.space = false
+    if (e.key == "ArrowUp") solid.cPress.up = false
+    if (e.key == "ArrowDown") solid.cPress.down = false
+    if (e.key == "ArrowLeft") solid.cPress.left = false
+    if (e.key == "ArrowRight") solid.cPress.right = false
 })
 
     function drawRect(rectObj, ctxObj) {
         // ctxObj.beginPath();
         ctxObj.fillStyle = rectObj.color,rectObj.padding, rectObj.visible;
         ctxObj.fillRect(rectObj.x, rectObj.y, rectObj.w, rectObj.h)
-        console.log(rectObj.x, '1', rectObj.y, '2', rectObj.w, '3', rectObj.h, '4')
         // ctxObj.closePath();
       }
       
@@ -126,54 +145,49 @@ window.addEventListener('keyup', (e) => {
 
       async function update(time) {
         console.log('updating...')
-        console.log(state)
         if (!init) {
           await getState()
         } else {
-          console.log(player)
-          state.players.forEach(p => {
-            if (p != player) return otherPlayer = p
-            return
-          })
+          otherPlayer = state.players[0] == player? state.players[1] : state.players[0]
+
         }
-        console.log(player, otherPlayer, state[otherPlayer].rect)
 
         init = false;
-        if (state[player].cPress.down) state[player].rect.y = state[player].rect.y + 5
-        if (state[player].cPress.up) state[player].rect.y = state[player].rect.y - 5
-        if (state[player].cPress.left) state[player].rect.x = state[player].rect.x - 5
-        if (state[player].cPress.right) state[player].rect.x = state[player].rect.x + 5
+        if (solid.cPress.down) state[player].rect.y = state[player].rect.y + 5
+        if (solid.cPress.up) state[player].rect.y = state[player].rect.y - 5
+        if (solid.cPress.left) state[player].rect.x = state[player].rect.x - 5
+        if (solid.cPress.right) state[player].rect.x = state[player].rect.x + 5
         drawCanvas([ctx])
         drawRect(state[player].rect, ctx)
         drawRect(state[otherPlayer].rect, ctx)
-        console.log(player, otherPlayer)
-        // console.log('2', otherPlayer, state[otherPlayer])
-        // if (otherPlayer) drawRect(state[otherPlayer].rect)
-
-        count++
-        // if (count < 20)
-
-    // if(time-lastFrameTime < FRAME_MIN_TIME && limitTime){
-     let post = await postMove(true);
+        
+     await postMove(true);
         // requestAnimationFrame(update);
-        // return;
-    // }
-    lastFrameTime = time;
-// console.log(state)
-      // requestAnimationFrame(update);
       };
 
-function postMove(reload) {
-  let xhr = new XMLHttpRequest();
-  xhr.open("POST", "/postmove");
-  xhr.setRequestHeader("Accept", "application/json");
-  xhr.setRequestHeader("Content-Type", "application/json");
-  xhr.onload = async() => {
-    state= await JSON.parse(xhr.responseText)
-    if (reload) requestAnimationFrame(update);
-  };
-  let data = JSON.stringify({player: player, rect: state[player].rect, gameId: state.id, game: state});
-  xhr.send(data);
+async function postMove(reload) {
+  await fetch("/postmove", {
+     
+    // Adding method type
+    method: "POST",
+     
+    // Adding body or contents to send
+    body: JSON.stringify({player: player, rect: state[player].rect, gameId: state.id, game: state, cPress: state[player].cPress}),
+     
+    // Adding headers to the request
+    headers: {
+        "Content-type": "application/json; charset=UTF-8", "Accept": "application/json"
+    }
+})
+ 
+// Converting to JSON
+.then(response => response.json())
+ 
+// Displaying results to console
+.then(data => {
+  state= data;
+  if (reload) requestAnimationFrame(update);
+});
 }
 
 function setupRect() {
@@ -188,8 +202,8 @@ function setupRect() {
     color: "#F7B02B",
     x: 45,
     y: 200,
-    dx: 0,
-    dy: 0,
+    dx: 1,
+    dy: 1,
   }
   } else {
   state[player].rect = {
@@ -202,8 +216,8 @@ function setupRect() {
     color: "#000000",
     x: 545,
     y: 200,
-    dx: 0,
-    dy: 0,
+    dx: 1,
+    dy: 1,
   }
   }
 }
