@@ -35,7 +35,7 @@ class player {
                 right: false
             },
             this.cannonTimer = 0;
-            this.life = 3,
+            this.lifeMeter = 3,
             this.rect = {}
             this.cannonBalls = [];
     }

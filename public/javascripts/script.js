@@ -16,6 +16,9 @@ const solid = {
     right: false
   }
 }
+let scoreboard = document.getElementById('scoreboard')
+let playerHealthBoard = document.getElementById('playerHealth')
+let otherPlayerHealthBoard = document.getElementById('otherPlayerHealth')
 const FRAMES_PER_SECOND = 3;  // Valid values are 60,30,20,15,10...
 // set the mim time to render the next frame
 const FRAME_MIN_TIME = (1000/60) * (60 / FRAMES_PER_SECOND) - (1000/60) * 0.5;
@@ -35,7 +38,6 @@ async function onLoad() {
     players = await getState();
   }
   players = await getPlayers();
-  console.log(state.players)
   setupRect();
   let test = await postMove(false)
     update();
@@ -56,7 +58,6 @@ async function getState() {
     return response.json()
   })
   .then(data => {
-    // console.log(data, 'game')
     state = data})
 }
 
@@ -67,7 +68,6 @@ async function getUuid() {
     return response.json()
   })
   .then(data => {
-    // console.log('testing')
     player = data.id
     p = data.id == data.p1? data.p1 : data.p2;
   state = data.game});
@@ -130,8 +130,6 @@ window.addEventListener('keyup', (e) => {
       }
 
       function drawBall(ball) {
-        // console.log(ball)
-
         rectObj.beginPath();
         rectObj.arc(ball.x, ball.y, 5, 0, Math.PI * 2);
         rectObj.fillStyle = ball.color;
@@ -145,7 +143,6 @@ window.addEventListener('keyup', (e) => {
       };
 
       async function update(time) {
-        // console.log('updating...')
         if (!init) {
           await getState()
         } else {
@@ -160,33 +157,31 @@ window.addEventListener('keyup', (e) => {
         if (solid.cPress.right) state[player].rect.x = state[player].rect.x + 5
         if (solid.cPress.space) {
           if (state[player].cannonTimer <= 0) {
-            state[player].cannonBalls.push(new CannonBall(state[player].rect.x, state[player].rect.y, 2))
-            console.log(state)
+            state[player].cannonBalls.push(new CannonBall(state[player].rect.x, state[player].rect.y, 3))
               state[player].cannonTimer = 26;
           }
         }
+        if (playerHealthBoard.innerHTML != state[player].lifeMeter) playerHealthBoard.innerHTML = state[player].lifeMeter
+        if (otherPlayerHealthBoard.innerHTML != state[otherPlayer].lifeMeter) otherPlayerHealthBoard.innerHTML = state[otherPlayer].lifeMeter
+
         drawCanvas([ctx])
         drawRect(state[player].rect, ctx)
         drawRect(state[otherPlayer].rect, ctx)
+        if (state[player].cannonBalls.length > 30) {
+          let extra = state[player].cannonBalls.length - 30;
+          state[player].cannonBalls.splice(0, extra)
+        }
         for (let i = 0; i < state[player].cannonBalls.length;i++) {
-          console.log(state[player].cannonBalls, state[player].cannonBalls[i])
-          // console.log('ball')
-          // console.log(cannonBalls[i])
           let ball = state[player].cannonBalls[i]
           drawBall(ball)
           if (ball.player == player) moveBall(ball)
-          // console.log(ball.x)
           // if (ball.x > 700) {
           // state.cannonBalls.splice(i,1)
       }
-      console.log(state)
       for (let i = 0; i < state[otherPlayer].cannonBalls.length;i++) {
-        // console.log('ball')
-        // console.log(cannonBalls[i])
         let ball = state[otherPlayer].cannonBalls[i]
         drawBall(ball)
         if (ball.player == player) moveBall(ball)
-        // console.log(ball.x)
         // if (ball.x > 700) {
         // state.cannonBalls.splice(i,1)
     }
@@ -221,7 +216,6 @@ async function postMove(reload) {
 }
 
 function setupRect() {
-  if (state.p1 == player) {
   state[player].rect = {
     w: 20,
     h: 20,
@@ -229,26 +223,11 @@ function setupRect() {
     offsetx: 45,
     offsety: 60,
     visible: true,
-    color: "#F7B02B",
-    x: 45,
-    y: 200,
+    color: state.p1 == player? '#F7B02B' : "#000000",
+    x: state.p1 == player? 45 : 545,
+    y: state.p1 == player? 200 : 200,
     dx: 1,
     dy: 1,
-  }
-  } else {
-  state[player].rect = {
-    w: 20,
-    h: 20,
-    padding: 30,
-    offsetx: 45,
-    offsety: 60,
-    visible: true,
-    color: "#000000",
-    x: 545,
-    y: 200,
-    dx: 1,
-    dy: 1,
-  }
   }
 }
 
@@ -267,16 +246,14 @@ class CannonBall {
   this.offsety = 60,
   this.visible = true,
   this.color = state.p1 == player? '#F7B02B' : "#120D85",
-  this.x = rectx,
-  this.y = recty,
+  this.x = state.p1 == player? rectx + state[player].rect.w : rectx,
+  this.y = recty + Math.floor(state[player].rect.h/2),
   this.dx = state.p1 == player? dx : -dx;
   this.dy = 0
   }
 }
 
 function drawBall(ball) {
-  // console.log(ball)
-
   ctx.beginPath();
   ctx.arc(ball.x, ball.y, 5, 0, Math.PI * 2);
   ctx.fillStyle = ball.color;
