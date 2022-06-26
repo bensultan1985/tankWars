@@ -22,6 +22,8 @@ class game {
     this.p2 = p2 || '';
     this.id = id || '';
     this.start = false;
+    this.players = [];
+    this.cannonBalls = [];
     }
 }
 
@@ -33,27 +35,22 @@ class player {
                 down: false,
                 right: false
             },
-            this.cannonTimer = 0,
+            this.cannonTimer = 0;
             this.life = 3,
-            this.rect = {},
-            this.cannonBalls = []
+            this.rect = {}
     }
 }
 let currentGame = [];
 let games = {};
 
-// app.use('/', indexRouter);
-// app.use('/users', usersRouter);
 app.get('/getuuid', function(req, res, next) {
     let gameId = uuid.v4();
     let id = uuid.v4();
-    // for (i = 0; i < games.length; i ++) {
-    //     if (games)
-    // }
     if (currentGame.length == 0) {
         games[gameId] = new game(id, '', gameId);
         currentGame[0] = gameId;
         games[gameId][id] = new player()
+        games[gameId].players.push(id)
 
     } else {
         gameId = currentGame[0]
@@ -61,22 +58,38 @@ app.get('/getuuid', function(req, res, next) {
         games[currentGame[0]][id] = 
         games[currentGame[0]].start = true;
         games[gameId][id] = new player()
-
+        games[gameId].players.push(id)
         currentGame = [];
     }
     res.status(200).send({id:id, game:games[gameId]});
   });
 
-  app.post('/postdata', function(req, res) {
-    let gameId = req.body.id
-    let game = req.body
-    games[gameId] = game
+  app.post('/postmove', function(req, res) {
+    let gameId = req.body.gameId
+    let game = req.body.game
+    games[gameId][req.body.player].rect = req.body.rect;
+    games[gameId][req.body.player].cPress = req.body.cPress;
+    games[gameId].cannonBalls = req.body.allBalls;
+    if (req.body.cannonBalls[0] != undefined) {
+        req.body.cannonBalls.forEach(cannonBall => games[gameId].cannonBalls.push(cannonBall))
+    }
+/*     if (games[gameId][req.body.player].cPress.down) games[gameId][req.body.player].rect.y = games[gameId][req.body.player].rect.y + 5
+    if (games[gameId][req.body.player].cPress.up) games[gameId][req.body.player].rect.y = games[gameId][req.body.player].rect.y - 5
+    if (games[gameId][req.body.player].cPress.left) games[gameId][req.body.player].rect.x = games[gameId][req.body.player].rect.x - 5
+    if (games[gameId][req.body.player].cPress.right) games[gameId][req.body.player].rect.x = games[gameId][req.body.player].rect.x + 5 */
     res.status(200).send(game)
+  })
+
+  app.get('/getplayers', function(req, res) {
+    res.status(200).send(games[req.query.id].players)
+  })
+
+  app.get('/getstate', function(req, res) {
+    res.status(200).send(games[req.query.id])
   })
 
   app.get('/getdata:id', function(req, res, next) {
     let id = req.params.get("gameId"); // "foo"
-    console.log('IDDD', id)
     let gameId = req.params.gameId
     // let id = req.params.id
     console.log(games[gameId])
