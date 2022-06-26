@@ -147,7 +147,6 @@ window.addEventListener('keyup', (e) => {
           await getState()
         } else {
           otherPlayer = state.players[0] == player? state.players[1] : state.players[0]
-
         }
 
         init = false;
@@ -161,8 +160,8 @@ window.addEventListener('keyup', (e) => {
               state[player].cannonTimer = 26;
           }
         }
-        if (playerHealthBoard.innerHTML != state[player].lifeMeter) playerHealthBoard.innerHTML = state[player].lifeMeter
-        if (otherPlayerHealthBoard.innerHTML != state[otherPlayer].lifeMeter) otherPlayerHealthBoard.innerHTML = state[otherPlayer].lifeMeter
+        if (playerHealthBoard.innerHTML != state[player].healthMeter) playerHealthBoard.innerHTML = state[player].healthMeter
+        if (otherPlayerHealthBoard.innerHTML != state[otherPlayer].healthMeter) otherPlayerHealthBoard.innerHTML = state[otherPlayer].healthMeter
 
         drawCanvas([ctx])
         drawRect(state[player].rect, ctx)
@@ -185,7 +184,19 @@ window.addEventListener('keyup', (e) => {
         // if (ball.x > 700) {
         // state.cannonBalls.splice(i,1)
     }
-        
+
+        hitDetection();
+        // console.log(state[otherPlayer].deleteBalls[0])
+          // console.log(state[otherPlayer].cannonBalls)
+          console.log(state)
+          if (state[otherPlayer].deleteBalls[0] != undefined) {
+            alert('test')
+            state[player].cannonBalls.forEach(cannon => {
+            console.log(state[otherPlayer].deleteBalls.indexOf(ball => ball == cannon))
+          })
+        }
+        // if (state[otherPlayer].deleteBalls[0] != undefined) alert(state[otherPlayer].deleteBalls[0])
+        // console.log(state[otherPlayer].deleteBalls)
      await postMove(true);
         // requestAnimationFrame(update);
       };
@@ -197,7 +208,7 @@ async function postMove(reload) {
     method: "POST",
      
     // Adding body or contents to send
-    body: JSON.stringify({player: player, rect: state[player].rect, gameId: state.id, game: state, cPress: state[player].cPress, cannonBalls: state[player].cannonBalls, cannonTimer: state[player].cannonTimer-1}),
+    body: JSON.stringify({player: player, otherPlayer: otherPlayer, rect: state[player].rect, gameId: state.id, game: state, cPress: state[player].cPress, cannonBalls: state[player].cannonBalls, cannonTimer: state[player].cannonTimer-1, healthMeter: state[player].healthMeter}),
      
     // Adding headers to the request
     headers: {
@@ -248,8 +259,9 @@ class CannonBall {
   this.color = state.p1 == player? '#F7B02B' : "#120D85",
   this.x = state.p1 == player? rectx + state[player].rect.w : rectx,
   this.y = recty + Math.floor(state[player].rect.h/2),
-  this.dx = state.p1 == player? dx : -dx;
-  this.dy = 0
+  this.dx = state.p1 == player? dx : -dx,
+  this.dy = 0,
+  this.id = Math.floor(Math.random() * 10000000)
   }
 }
 
@@ -259,4 +271,19 @@ function drawBall(ball) {
   ctx.fillStyle = ball.color;
   ctx.fill();
   ctx.closePath();
+}
+
+function hitDetection() {
+  for (let i=0; i < state[otherPlayer].cannonBalls.length;i++) {
+    let ball = state[otherPlayer].cannonBalls[i];
+    let rect = state[player].rect;
+    if (ball.x > rect.x && ball.x < rect.x+rect.w) {
+      if (ball.y > rect.y && ball.y < rect.y + rect.h) {
+        state[otherPlayer].deleteBalls.push(ball.id);
+        state[player].healthMeter--
+        return true;
+      }
+    }
+  }
+  return false;
 }

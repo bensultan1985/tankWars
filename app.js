@@ -35,9 +35,10 @@ class player {
                 right: false
             },
             this.cannonTimer = 0;
-            this.lifeMeter = 3,
-            this.rect = {}
-            this.cannonBalls = [];
+            this.healthMeter = 3,
+            this.rect = {},
+            this.cannonBalls = [],
+            this.deleteBalls = []
     }
 }
 let currentGame = [];
@@ -71,7 +72,23 @@ app.get('/getuuid', function(req, res, next) {
     games[gameId][req.body.player].cPress = req.body.cPress;
     games[gameId][req.body.player].cannonBalls = req.body.cannonBalls;
     games[gameId][req.body.player].cannonTimer = req.body.cannonTimer;
+    games[gameId][req.body.player].healthMeter = req.body.healthMeter;
+    if (games[gameId][req.body.otherPlayer]) {
+        if (req.body.game[req.body.otherPlayer].deleteBalls[0] != undefined) {
+                req.body.game[req.body.otherPlayer].deleteBalls.forEach(ball => {
+                games[gameId][req.body.otherPlayer].deleteBalls.push(ball)
+            })
+        }
+        games[gameId][req.body.player].deleteBalls.forEach(ballId => {
+            let i = games[gameId][req.body.player].cannonBalls.findIndex(cannonBall => cannonBall.id == ballId)
+            console.log(i)
+            if (i > -1) games[gameId][req.body.player].cannonBalls.splice(i)
+            return
+        })
+        games[gameId][req.body.player].deleteBalls = [];
 
+    }
+console.log(game)
     res.status(200).send(game)
   })
 
