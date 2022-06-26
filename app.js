@@ -23,7 +23,6 @@ class game {
     this.id = id || '';
     this.start = false;
     this.players = [];
-    this.cannonBalls = [];
     }
 }
 
@@ -38,6 +37,7 @@ class player {
             this.cannonTimer = 0;
             this.life = 3,
             this.rect = {}
+            this.cannonBalls = [];
     }
 }
 let currentGame = [];
@@ -69,14 +69,9 @@ app.get('/getuuid', function(req, res, next) {
     let game = req.body.game
     games[gameId][req.body.player].rect = req.body.rect;
     games[gameId][req.body.player].cPress = req.body.cPress;
-    games[gameId].cannonBalls = req.body.allBalls;
-    if (req.body.cannonBalls[0] != undefined) {
-        req.body.cannonBalls.forEach(cannonBall => games[gameId].cannonBalls.push(cannonBall))
-    }
-/*     if (games[gameId][req.body.player].cPress.down) games[gameId][req.body.player].rect.y = games[gameId][req.body.player].rect.y + 5
-    if (games[gameId][req.body.player].cPress.up) games[gameId][req.body.player].rect.y = games[gameId][req.body.player].rect.y - 5
-    if (games[gameId][req.body.player].cPress.left) games[gameId][req.body.player].rect.x = games[gameId][req.body.player].rect.x - 5
-    if (games[gameId][req.body.player].cPress.right) games[gameId][req.body.player].rect.x = games[gameId][req.body.player].rect.x + 5 */
+    games[gameId][req.body.player].cannonBalls = req.body.cannonBalls;
+    games[gameId][req.body.player].cannonTimer = req.body.cannonTimer;
+
     res.status(200).send(game)
   })
 
