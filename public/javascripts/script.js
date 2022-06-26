@@ -16,6 +16,7 @@ const solid = {
     right: false
   }
 }
+let tempCannonBalls = [];
 const FRAMES_PER_SECOND = 3;  // Valid values are 60,30,20,15,10...
 // set the mim time to render the next frame
 const FRAME_MIN_TIME = (1000/60) * (60 / FRAMES_PER_SECOND) - (1000/60) * 0.5;
@@ -101,6 +102,12 @@ window.addEventListener('keydown', (e) => {
     if (e.key == "ArrowDown") solid.cPress.down = true
     if (e.key == "ArrowLeft") solid.cPress.left = true
     if (e.key == "ArrowRight") solid.cPress.right = true
+    if (solid.cPress.space) {
+      if (state[player].cannonTimer <= 0) {
+        tempCannonBalls.push(new CannonBall(state[player].rect.x, state[player].rect.y, 2))
+          state[player].cannonTimer = 26;
+      }
+    }
 })
 
 window.addEventListener('keyup', (e) => {
@@ -144,7 +151,7 @@ window.addEventListener('keyup', (e) => {
       };
 
       async function update(time) {
-        console.log('updating...')
+        // console.log('updating...')
         if (!init) {
           await getState()
         } else {
@@ -160,6 +167,17 @@ window.addEventListener('keyup', (e) => {
         drawCanvas([ctx])
         drawRect(state[player].rect, ctx)
         drawRect(state[otherPlayer].rect, ctx)
+        for (let i = 0; i < state.cannonBalls.length;i++) {
+          console.log(state.cannonBalls, state.cannonBalls[i])
+          // console.log('ball')
+          // console.log(cannonBalls[i])
+          let ball = state.cannonBalls[i]
+          drawBall(ball)
+          if (ball.player == player) moveBall(ball)
+          // console.log(ball.x)
+          // if (ball.x > 700) {
+          // state.cannonBalls.splice(i,1)
+      }
         
      await postMove(true);
         // requestAnimationFrame(update);
@@ -172,7 +190,7 @@ async function postMove(reload) {
     method: "POST",
      
     // Adding body or contents to send
-    body: JSON.stringify({player: player, rect: state[player].rect, gameId: state.id, game: state, cPress: state[player].cPress}),
+    body: JSON.stringify({player: player, rect: state[player].rect, gameId: state.id, game: state, cPress: state[player].cPress, cannonBalls: tempCannonBalls, allBalls: state.cannonBalls}),
      
     // Adding headers to the request
     headers: {
@@ -185,6 +203,7 @@ async function postMove(reload) {
  
 // Displaying results to console
 .then(data => {
+  tempCannonBalls=[];
   state= data;
   if (reload) requestAnimationFrame(update);
 });
@@ -220,4 +239,36 @@ function setupRect() {
     dy: 1,
   }
   }
+}
+
+function moveBall(ball) {
+  ball.x += ball.dx;
+  // ball.y += ball.dy;
+};
+
+class CannonBall {
+  constructor(rectx, recty, dx) {
+    this.player = player
+  this.w = 5,
+  this.h = 5,
+  this.padding = 30,
+  this.offsetx = 45,
+  this.offsety = 60,
+  this.visible = true,
+  this.color = state.p1 == player? '#F7B02B' : "#120D85",
+  this.x = rectx,
+  this.y = recty,
+  this.dx = state.p1 == player? dx : -dx;
+  this.dy = 0
+  }
+}
+
+function drawBall(ball) {
+  // console.log(ball)
+
+  ctx.beginPath();
+  ctx.arc(ball.x, ball.y, 5, 0, Math.PI * 2);
+  ctx.fillStyle = ball.color;
+  ctx.fill();
+  ctx.closePath();
 }
