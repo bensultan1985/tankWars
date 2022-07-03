@@ -23,6 +23,8 @@ class game {
     this.id = id || '';
     this.start = false;
     this.players = [];
+    this.dCannonBalls = {
+        }
     }
 }
 
@@ -52,7 +54,7 @@ app.get('/getuuid', function(req, res, next) {
         currentGame[0] = gameId;
         games[gameId][id] = new player()
         games[gameId].players.push(id)
-
+        games[gameId].dCannonBalls[id] = [];
     } else {
         gameId = currentGame[0]
         games[currentGame[0]].p2 = id;
@@ -61,6 +63,7 @@ app.get('/getuuid', function(req, res, next) {
         games[gameId][id] = new player()
         games[gameId].players.push(id)
         currentGame = [];
+        games[gameId].dCannonBalls[id] = [];
     }
     res.status(200).send({id:id, game:games[gameId]});
   });
@@ -73,22 +76,29 @@ app.get('/getuuid', function(req, res, next) {
     games[gameId][req.body.player].cannonBalls = req.body.cannonBalls;
     games[gameId][req.body.player].cannonTimer = req.body.cannonTimer;
     games[gameId][req.body.player].healthMeter = req.body.healthMeter;
-    if (games[gameId][req.body.otherPlayer]) {
-        if (req.body.game[req.body.otherPlayer].deleteBalls[0] != undefined) {
-                req.body.game[req.body.otherPlayer].deleteBalls.forEach(ball => {
-                games[gameId][req.body.otherPlayer].deleteBalls.push(ball)
-            })
-        }
-        games[gameId][req.body.player].deleteBalls.forEach(ballId => {
-            let i = games[gameId][req.body.player].cannonBalls.findIndex(cannonBall => cannonBall.id == ballId)
-            console.log(i)
-            if (i > -1) games[gameId][req.body.player].cannonBalls.splice(i)
-            return
-        })
-        games[gameId][req.body.player].deleteBalls = [];
+    games[gameId][req.body.player].rect.color = req.body.playerColor;
 
+    games[gameId].dCannonBalls[req.body.otherPlayer] = [];
+    if (req.body.deleteBalls != undefined) {
+    req.body.deleteBalls.forEach(ball => {
+        if (ball != undefined || 0) games[gameId].dCannonBalls[req.body.otherPlayer].push(ball)
+
+    })
+    let myBalls = games[gameId][req.body.player].cannonBalls
+    let myDeleteBalls = games[gameId].dCannonBalls[req.body.player]
+    let newBalls = []
+    if (games[gameId][req.body.otherPlayer]) {
+        for (let i = 0; i < myDeleteBalls.length; i++) {
+            myBalls.forEach(ball => {
+                if (ball.id != myDeleteBalls[i]) newBalls.push(ball)
+
+            })
+            games[gameId][req.body.player].cannonBalls = newBalls;
+        }
     }
-console.log(game)
+}   
+// games[gameId].dCannonBalls[req.body.otherPlayer] = [];
+// games[gameId].dCannonBalls[req.body.player] = [];
     res.status(200).send(game)
   })
 
@@ -104,7 +114,6 @@ console.log(game)
     let id = req.params.get("gameId"); // "foo"
     let gameId = req.params.gameId
     // let id = req.params.id
-    console.log(games[gameId])
     res.status(200).send({id:id, game:games[gameId]});
     });
 
