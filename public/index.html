@@ -4,14 +4,34 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="stylesheets/style.css">
     <title>Document</title>
 </head>
-<body onload="onLoad()";>
-    <canvas id="gameCanvas" width="600" height="400" style="border:solid"></canvas>
+<body>
+    <div>
+        <div id="header">
+            <h2 style="margin-top: 10px;">Taranus: Multiplayer Tank Battleground</h1>
+                <h4>This game contains music and sound. <button id="mute" onclick="toggleMute()">mute</button></h4>
+            </div>
+        <div id="start">
+            <button id="ready" onclick="readyForPlay()">Play</button>
+        </div>
+        <div id="gameBoard" style="display: none">
+    <canvas id="gameCanvas" width="600" height="400" style="border:solid; margin-bottom: 10px; background:white;"></canvas>
     <div id="scoreboard">
         <div id="playerLabel">My Health <span id="playerHealth"></span></div>
         <div id="otherPlayerLabel">Enemy Health <span id="otherPlayerHealth"></span></div>
     </div>
+</div>
+</div>
+<div id="connectionModal" data-open class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+      <p>Waiting for other player...</p>
+    </div>
+  
+  </div>
     <script src="javascripts/script.js"></script>
 </body>
 </html>
