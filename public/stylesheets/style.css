@@ -30,3 +30,6 @@ a {
   width: 80%; /* Could be more or less, depending on screen size */
 }
 
+.health {
+  font-size: 24px
+}

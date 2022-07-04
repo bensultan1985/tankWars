@@ -17,12 +17,17 @@
             <button id="ready" onclick="readyForPlay()">Play</button>
         </div>
         <div id="gameBoard" style="display: none">
-    <canvas id="gameCanvas" width="600" height="400" style="border:solid; margin-bottom: 10px; background:white;"></canvas>
+    <canvas id="gameCanvas" width="600" height="400" style="border:solid; margin-bottom: 10px; background:white; border-width: 3px"></canvas>
     <div id="scoreboard">
-        <div id="playerLabel">My Health <span id="playerHealth"></span></div>
-        <div id="otherPlayerLabel">Enemy Health <span id="otherPlayerHealth"></span></div>
+        <div id="scoreboardContainer" style="border:solid; margin-bottom: 10px; margin-top: 10px; background:white; width: 600px; height: 30px">
+
+        <div id="playerLabel" style="float: left" class="health">My Health <span id="playerHealth"></span></div>
+        <div id="otherPlayerLabel" style ="float: right" class="health">Enemy Health <span id="otherPlayerHealth"></span></div>
+    </div>
     </div>
 </div>
+<div id="endgame" style="display: none">test</div>
+
 </div>
 <div id="connectionModal" data-open class="modal">
 
