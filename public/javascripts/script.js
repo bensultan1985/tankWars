@@ -267,8 +267,8 @@ async function update(time) {
 	if (solid.cPress.right && inBounds('right')) state[player].rect.x = state[player].rect.x + 5
 	if (solid.cPress.space) {
 		if (state[player].cannonTimer <= 0) {
-			state[player].cannonBalls.push(new CannonBall(state[player].rect.x, state[player].rect.y, 15))
-			state[player].cannonTimer = 26;
+			state[player].cannonBalls.push(new CannonBall(state[player].rect.x, state[player].rect.y, 18))
+			state[player].cannonTimer = 14;
 			let temp = new Audio('sounds/hit.mp3')
 			canvas.appendChild(temp)
 			// temp.volume = 0.5
@@ -391,8 +391,8 @@ function setupRect() {
 		hitColor: 'red',
 		x: state.p1 == player ? 45 : 545,
 		y: state.p1 == player ? 200 : 200,
-		dx: 10,
-		dy: 10,
+		dx: 14,
+		dy: 14,
 	}
 }
 
@@ -441,7 +441,7 @@ function hitDetection() {
 					if (state.dCannonBalls[otherPlayer].length == 0) {
 						state.dCannonBalls[otherPlayer].push(ball.id);
 						state[player].healthMeter--
-						hitTimer = 60
+						hitTimer = 30
 						canvas.style.borderColor = 'red';
 						canvas.style.background = '#FFF0F0';
 						// playerColor = state[player].rect.color
