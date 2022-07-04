@@ -261,10 +261,10 @@ async function update(time) {
 
 
 
-	if (solid.cPress.down && inBounds('down')) state[player].rect.y = state[player].rect.y + 5
-	if (solid.cPress.up && inBounds('up')) state[player].rect.y = state[player].rect.y - 5
-	if (solid.cPress.left && inBounds('left')) state[player].rect.x = state[player].rect.x - 5
-	if (solid.cPress.right && inBounds('right')) state[player].rect.x = state[player].rect.x + 5
+	if (solid.cPress.down && inBounds('down')) state[player].rect.y = state[player].rect.y + 14
+	if (solid.cPress.up && inBounds('up')) state[player].rect.y = state[player].rect.y - 14
+	if (solid.cPress.left && inBounds('left')) state[player].rect.x = state[player].rect.x - 14
+	if (solid.cPress.right && inBounds('right')) state[player].rect.x = state[player].rect.x + 14
 	if (solid.cPress.space) {
 		if (state[player].cannonTimer <= 0) {
 			state[player].cannonBalls.push(new CannonBall(state[player].rect.x, state[player].rect.y, 22))
@@ -391,8 +391,8 @@ function setupRect() {
 		hitColor: 'red',
 		x: state.p1 == player ? 45 : 545,
 		y: state.p1 == player ? 200 : 200,
-		dx: 24,
-		dy: 24,
+		dx: 40,
+		dy: 40,
 	}
 }
 
