@@ -391,8 +391,8 @@ function setupRect() {
 		hitColor: 'red',
 		x: state.p1 == player ? 45 : 545,
 		y: state.p1 == player ? 200 : 200,
-		dx: 18,
-		dy: 18,
+		dx: 24,
+		dy: 24,
 	}
 }
 
