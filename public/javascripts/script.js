@@ -255,7 +255,7 @@ async function update(time) {
 		setTimeout(() => {
 			canvas.style.borderColor = 'black';
 			// canvas.style.borderWidth = '2px';
-			canvas.style.background = 'white'
+			canvas.style.background = 'white';
 		}, 240)
 	}
 
