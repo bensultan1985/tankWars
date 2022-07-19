@@ -94,7 +94,7 @@ const toggleMute = (e) => {
 	}
 }
 }
-const playerSocket = new WebSocket('ws://localhost:8080/');
+const playerSocket = new WebSocket('ws://taranus-v1.herokuapp.com:8080/');
 playerSocket.onopen = function (event) {
 }
 
