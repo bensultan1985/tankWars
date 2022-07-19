@@ -95,7 +95,8 @@ const toggleMute = (e) => {
 }
 }
 const HOST = location.origin.replace(/^http/, 'ws')
-const playerSocket = new WebSocket(HOST + ':8080');
+const playerSocket = new WebSocket(HOST);
+// const playerSocket = new WebSocket(HOST + ':8080');
 console.log('creating socket')
 // const playerSocket = new WebSocket('ws://localhost:8080/');
 playerSocket.onopen = function (event) {

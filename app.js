@@ -7,7 +7,7 @@ const {WebSocketServer} = require('ws');
 const WebSocket = require('ws');
 
 const wss = new WebSocketServer({
-    port: 8080,
+    port: process.env.PORT || 8080,
   });
 
 //   wss.getUniqueID = function () {
