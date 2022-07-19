@@ -1,3 +1,4 @@
+
 let x = 0;
 let y = 0;
 let player = "";
@@ -63,6 +64,7 @@ tankGraphics.tankRight = tankRight
 
 function playButtonHandler() {
 	readyForPlay();
+	console.log(playerSocket)
 }
 let themeMusic = new Audio('sounds/dance.mp3')
 themeMusic.volue = 0.8;
@@ -76,7 +78,9 @@ function startMusic() {
 	initSound = true;
 }
 
-const toggleMute = () => {
+const toggleMute = (e) => {
+	if (window.event.key != ' ') {
+		console.log(window.event)
 	let muteButton = document.getElementById('mute')
 	if (muteButton.innerHTML == 'mute') {
 		soundOn = false;
@@ -89,6 +93,19 @@ const toggleMute = () => {
 
 	}
 }
+}
+const playerSocket = new WebSocket('ws://localhost:8080/');
+playerSocket.onopen = function (event) {
+}
+
+playerSocket.onmessage = function(e) {
+	console.log(e)
+	let data = JSON.parse(e.data.toString())
+	console.log(data)
+	state = data;
+	   update();
+ }
+
 
 async function readyForPlay() {
 	document.getElementById('connectionModal').style.display = 'block'
@@ -100,11 +117,10 @@ async function readyForPlay() {
 		players = await getState();
 	}
 	players = await getPlayers();
-	startMusic()
-	setupRect();
-	let test = await postMove(false)
-	update();
-
+startMusic()
+setupRect();
+// let test = await postMove(false)
+update();
 };
 
 async function getPlayers() {
@@ -214,11 +230,7 @@ function moveBall(ball) {
 };
 
 async function update(time) {
-	if (!init) {
-		await getState()
-	} else {
-		otherPlayer = state.players[0] == player ? state.players[1] : state.players[0]
-	}
+	if (init) otherPlayer = state.players[0] == player ? state.players[1] : state.players[0]
 	document.getElementById('connectionModal').style.display = 'none'
 	init = false;
 	let opCannonBalls = state[otherPlayer].cannonBalls ? state[otherPlayer].cannonBalls : ''
@@ -261,14 +273,14 @@ async function update(time) {
 
 
 
-	if (solid.cPress.down && inBounds('down')) state[player].rect.y = state[player].rect.y + 24
-	if (solid.cPress.up && inBounds('up')) state[player].rect.y = state[player].rect.y - 24
-	if (solid.cPress.left && inBounds('left')) state[player].rect.x = state[player].rect.x - 24
-	if (solid.cPress.right && inBounds('right')) state[player].rect.x = state[player].rect.x + 24
+	if (solid.cPress.down && inBounds('down')) state[player].rect.y = state[player].rect.y + .4
+	if (solid.cPress.up && inBounds('up')) state[player].rect.y = state[player].rect.y - .4
+	if (solid.cPress.left && inBounds('left')) state[player].rect.x = state[player].rect.x - .4
+	if (solid.cPress.right && inBounds('right')) state[player].rect.x = state[player].rect.x + .4
 	if (solid.cPress.space) {
 		if (state[player].cannonTimer <= 0) {
-			state[player].cannonBalls.push(new CannonBall(state[player].rect.x, state[player].rect.y, 22))
-			state[player].cannonTimer = 4;
+			state[player].cannonBalls.push(new CannonBall(state[player].rect.x, state[player].rect.y, .3))
+			state[player].cannonTimer = 600;
 			let temp = new Audio('sounds/hit.mp3')
 			canvas.appendChild(temp)
 			// temp.volume = 0.5
@@ -338,7 +350,7 @@ async function update(time) {
 
 async function postMove(reload) {
 	if (gameOver == false) {
-		if (reload) hitDetection()
+/* 		if (reload) hitDetection()
 		hitTimer--
 		await fetch("/postmove", {
 
@@ -375,13 +387,31 @@ async function postMove(reload) {
 				state = data;
 				if (reload) requestAnimationFrame(update);
 			});
-	}
+	} */
+	if (reload) hitDetection()
+	hitTimer--
+	let e = JSON.stringify({
+		player: player,
+		otherPlayer: otherPlayer,
+		rect: state[player].rect,
+		gameId: state.id,
+		game: state,
+		cPress: state[player].cPress,
+		cannonBalls: state[player].cannonBalls,
+		cannonTimer: state[player].cannonTimer - 1,
+		healthMeter: state[player].healthMeter,
+		deleteBalls: state.dCannonBalls[otherPlayer],
+		playerColor: state[player].rect.color
+	})
+	// console.log('test')
+	playerSocket.send(e);
+}
 }
 
 function setupRect() {
 	state[player].rect = {
-		w: 40,
-		h: 40,
+		w: 50,
+		h: 60,
 		padding: 30,
 		offsetx: 45,
 		offsety: 60,
@@ -441,7 +471,7 @@ function hitDetection() {
 					if (state.dCannonBalls[otherPlayer].length == 0) {
 						state.dCannonBalls[otherPlayer].push(ball.id);
 						state[player].healthMeter--
-						hitTimer = 12
+						hitTimer = 1000
 						canvas.style.borderColor = 'red';
 						canvas.style.background = '#FFF0F0';
 						// playerColor = state[player].rect.color
