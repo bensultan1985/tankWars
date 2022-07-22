@@ -4,9 +4,11 @@
  * Module dependencies.
  */
 
-var app = require('../app');
+const {app, wss} = require('../app');
 var debug = require('debug')('tankwars:server');
 var http = require('http');
+var {parse} = require('url');
+
 /**
  * Get port from environment and store in Express.
  */
@@ -19,6 +21,15 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+server.on('upgrade', function upgrade(request, socket, head) {
+  const { pathname } = parse(request.url);
+
+  if (pathname === '/') {
+    wss.handleUpgrade(request, socket, head, function done(ws) {
+      wss.emit('connection', ws, request);
+    });
+  }
+  });
 
 /**
  * Listen on provided port, on all network interfaces.

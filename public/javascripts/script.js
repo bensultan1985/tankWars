@@ -104,11 +104,35 @@ playerSocket.onopen = function (event) {
 }
 
 playerSocket.onmessage = function(e) {
-	console.log(e)
 	let data = JSON.parse(e.data.toString())
-	console.log(data)
-	state = data;
+	if (data.call == 'postmove') {
+	state = data.body;
 	   update();
+	}
+	if (data.call == 'getuuid') {
+
+		player = data.body.id
+		p = data.body.id == data.body.game.p1 ? data.body.game.p1 : data.body.game.p2;
+		state = data.body.game
+		if (state.players.length == 2) {
+	startMusic()
+	setupRect();
+	update();
+		}
+	}
+	if (data.call == 'getplayers') {
+		if (data.body.p2 == true) {
+			player = data.body.id
+			p = data.body.id == data.body.game.p1 ? data.body.game.p1 : data.body.game.p2;
+		}
+		state = data.body.game
+		players = data.body.players
+		if (state.players.length == 2) {
+			startMusic()
+			setupRect();
+			update();
+		}
+	}
  }
 
 
@@ -117,18 +141,10 @@ async function readyForPlay() {
 	document.getElementById('gameBoard').style.display = 'block'
 	// canvas.style.display = 'block'
 	document.getElementById('start').style.display = 'none'
-	await getUuid();
-	while (state.players.length < 2) {
-		players = await getState();
-	}
-	players = await getPlayers();
-startMusic()
-setupRect();
-// let test = await postMove(false)
-update();
+	playerSocket.send(JSON.stringify({call: 'getuuid'}))
 };
 
-async function getPlayers() {
+/* async function getPlayers() {
 	const uuid = await fetch('/getplayers?id=' + state.id)
 		.then(response => {
 			return response.json()
@@ -136,7 +152,7 @@ async function getPlayers() {
 		.then(data => {
 			state.players = data
 		})
-}
+} */
 
 async function getState() {
 	await fetch('/getstate?id=' + state.id)
@@ -149,20 +165,7 @@ async function getState() {
 }
 
 
-async function getUuid() {
-	const uuid = await fetch('/getuuid')
-		.then(response => {
-			return response.json()
-		})
-		.then(data => {
-			player = data.id
-			p = data.id == data.p1 ? data.p1 : data.p2;
-			state = data.game
-		});
-	return
-}
-
-async function getData() {
+/* async function getData() {
 	const data = await fetch(`/getData` + new URLSearchParams({
 			gameId: state.id,
 			id: player
@@ -176,7 +179,7 @@ async function getData() {
 			otherPlayer = data.id == data.p1 ? data.p2 : data.p1;
 			state = data.game
 		});
-}
+} */
 
 window.addEventListener('keydown', (e) => {
 	if (e.key == " ") state[player].cPress.space = true
@@ -235,6 +238,7 @@ function moveBall(ball) {
 };
 
 async function update(time) {
+	console.log('init')
 	if (init) otherPlayer = state.players[0] == player ? state.players[1] : state.players[0]
 	document.getElementById('connectionModal').style.display = 'none'
 	init = false;
@@ -278,14 +282,14 @@ async function update(time) {
 
 
 
-	if (solid.cPress.down && inBounds('down')) state[player].rect.y = state[player].rect.y + .4
-	if (solid.cPress.up && inBounds('up')) state[player].rect.y = state[player].rect.y - .4
-	if (solid.cPress.left && inBounds('left')) state[player].rect.x = state[player].rect.x - .4
-	if (solid.cPress.right && inBounds('right')) state[player].rect.x = state[player].rect.x + .4
+	if (solid.cPress.down && inBounds('down')) state[player].rect.y = state[player].rect.y + 4
+	if (solid.cPress.up && inBounds('up')) state[player].rect.y = state[player].rect.y - 4
+	if (solid.cPress.left && inBounds('left')) state[player].rect.x = state[player].rect.x - 4
+	if (solid.cPress.right && inBounds('right')) state[player].rect.x = state[player].rect.x + 4
 	if (solid.cPress.space) {
 		if (state[player].cannonTimer <= 0) {
-			state[player].cannonBalls.push(new CannonBall(state[player].rect.x, state[player].rect.y, .3))
-			state[player].cannonTimer = 600;
+			state[player].cannonBalls.push(new CannonBall(state[player].rect.x, state[player].rect.y, 3))
+			state[player].cannonTimer = 60;
 			let temp = new Audio('sounds/hit.mp3')
 			canvas.appendChild(temp)
 			// temp.volume = 0.5
@@ -395,7 +399,9 @@ async function postMove(reload) {
 	} */
 	if (reload) hitDetection()
 	hitTimer--
+	console.log('sending')
 	let e = JSON.stringify({
+		call: 'postmove',
 		player: player,
 		otherPlayer: otherPlayer,
 		rect: state[player].rect,
@@ -476,7 +482,7 @@ function hitDetection() {
 					if (state.dCannonBalls[otherPlayer].length == 0) {
 						state.dCannonBalls[otherPlayer].push(ball.id);
 						state[player].healthMeter--
-						hitTimer = 1000
+						hitTimer = 100
 						canvas.style.borderColor = 'red';
 						canvas.style.background = '#FFF0F0';
 						// playerColor = state[player].rect.color
